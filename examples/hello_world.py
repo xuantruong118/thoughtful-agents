@@ -8,12 +8,16 @@ This example uses the turn-taking engine to decide which agent speaks next.
 
 import asyncio
 from thoughtful_agents.models import (
-    Agent, 
-    Conversation, 
+    Agent,
+    Conversation,
 )
 from thoughtful_agents.utils.turn_taking_engine import decide_next_speaker_and_utterance, predict_turn_taking_type
+from thoughtful_agents.utils.timing import TimingTracker, set_timing_tracker
 
 async def main():
+    # Initialize timing tracker
+    tracker = TimingTracker()
+    set_timing_tracker(tracker)
 
     # Create a conversation with a simple context
     conversation = Conversation(context="A friendly chat between Alice and Bob.")
@@ -84,6 +88,9 @@ async def main():
         participant_name = event.participant_name
         content = event.content
         print(f"🔄 Turn {i+1}: {participant_name}: \"{content}\"")
+
+    # Print execution time summary
+    tracker.print_summary(detailed=False)
 
 if __name__ == "__main__":
     asyncio.run(main()) 

@@ -24,20 +24,25 @@ import os
 from typing import Optional
 
 from thoughtful_agents.models import (
-    Agent, 
+    Agent,
     Conversation,
 )
 from thoughtful_agents.utils.turn_taking_engine import decide_next_speaker_and_utterance, predict_turn_taking_type
+from thoughtful_agents.utils.timing import TimingTracker, set_timing_tracker
 from thoughtful_agents.utils.llm_api import DEFAULT_COMPLETION_MODEL, DEFAULT_EMBEDDING_MODEL
 
 async def run_conversation(num_turns: int = 5, verbose: bool = True):
     """
     Run a conversation between Alice, Bob, and Charlie about their weekend activities.
-    
+
     Args:
         num_turns: Number of conversation turns to simulate
         verbose: Whether to print detailed thought processes and turn-taking predictions
     """
+    # Initialize timing tracker
+    tracker = TimingTracker()
+    set_timing_tracker(tracker)
+
     # Create a conversation with a simple context
     conversation = Conversation(context="A casual conversation between friends Alice, Bob, and Charlie about what they did last weekend.")
     
@@ -148,13 +153,16 @@ I'm proud to have a happy and healthy relationship with my partner."""
             break
     
     print("\n==== 🏁 End of Conversation 🏁 ====\n")
-    
+
     # Summary
     print("📋 Conversation Summary:")
     for i, event in enumerate(conversation.event_history):
         participant_name = event.participant_name
         content = event.content
         print(f"🔄 Turn {i+1}: {participant_name}: \"{content}\"")
+
+    # Print execution time summary
+    tracker.print_summary(detailed=False)
 
 async def main():
     # Get number of turns from command line arguments or use default
