@@ -10,8 +10,13 @@ from thoughtful_agents.models import (
     Conversation,
 )
 from thoughtful_agents.utils.turn_taking_engine import predict_turn_taking_type
+from thoughtful_agents.utils.timing import TimingTracker, set_timing_tracker
 
 async def main():
+    # Initialize timing tracker
+    tracker = TimingTracker()
+    set_timing_tracker(tracker)
+
     # Create a conversation with a simple context
     conversation = Conversation(context="A chat between a human and an AI assistant.")
     
@@ -106,10 +111,13 @@ async def main():
         content = event.content
         print(f"🔄 Turn {i+1}: {participant_name}: \"{content}\"")
     
-    # Print all thoughts in the reservoir 
+    # Print all thoughts in the reservoir
     print("\n🧠 All thoughts in AI's thought reservoir:")
     for i, thought in enumerate(ai_agent.thought_reservoir.thoughts):
         print(f"{i+1}. '{thought.content}' (Motivation: {thought.intrinsic_motivation['score']})")
+
+    # Print execution time summary
+    tracker.print_summary(detailed=False)
 
 if __name__ == "__main__":
     asyncio.run(main()) 
