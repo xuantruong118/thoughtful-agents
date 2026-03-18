@@ -18,6 +18,7 @@ A framework for modeling agent thoughts and conversations, enabling more natural
   - [Detailed Thought Process Example](#detailed-thought-process-example)
   - [Lecture Practice Example](#lecture-practice-example)
   - [Multi-Party Conversation Example](#multi-party-conversation-example)
+  - [Vehicle Virtual Assistant Examples](#vehicle-virtual-assistant-examples)
 - [License](#license)
 - [Citation](#citation)
 - [Contact](#contact)
@@ -127,6 +128,10 @@ The project is organized as follows:
   - `ai_thought_process.py`: Detailed example showing the AI's thought process
   - `lecture_practice.py`: Example of an AI providing proactive feedback during a lecture practice
   - `multiparty_conversation.py`: Example of a multi-party conversation between three AI agents
+  - `vehicle_assistant_scenario1.py`: Vehicle assistant with passengers discussing car brands
+  - `vehicle_assistant_scenario2.py`: Memory-based proactive assistant with low fuel trigger
+  - `vehicle_assistant_demo.py`: Combined demo for both vehicle assistant scenarios
+  - `VEHICLE_ASSISTANT_README.md`: Detailed documentation for vehicle assistant simulations
 
 ## Distribution
 
@@ -389,6 +394,49 @@ for turn in range(num_turns):
         # Broadcast the event to let all agents think
         await conversation.broadcast_event(new_event)
 ```
+
+### Vehicle Virtual Assistant Examples
+
+The framework includes two scenarios demonstrating a proactive vehicle virtual assistant:
+
+**Scenario 1: Passenger Conversation About Car Brands**
+
+Two passengers discuss car brands (Vinfast, BMW, Mercedes) while a virtual assistant listens and proactively provides relevant information when appropriate.
+
+```python
+# Run scenario 1 only
+python examples/vehicle_assistant_scenario1.py
+
+# Or use the combined demo
+python examples/vehicle_assistant_demo.py 1
+```
+
+**Scenario 2: Memory-Based Low Fuel Alert**
+
+The assistant remembers the driver's daily 8:30 AM refueling pattern. When a low fuel warning triggers, it proactively suggests the nearest gas station based on learned preferences and current context.
+
+```python
+# Run scenario 2 only
+python examples/vehicle_assistant_scenario2.py
+
+# Or use the combined demo
+python examples/vehicle_assistant_demo.py 2
+```
+
+**Run Both Scenarios:**
+
+```python
+python examples/vehicle_assistant_demo.py
+```
+
+Key Features Demonstrated:
+- **Memory-based pattern recognition**: Assistant learns and recalls daily routines
+- **Event-driven triggers**: Proactive responses to vehicle alerts (low fuel)
+- **Context-aware suggestions**: Location and time-sensitive recommendations
+- **Multi-party conversations**: Handling multiple passengers and assistant
+- **Proactive information sharing**: Providing relevant information without being asked
+
+For detailed documentation, see [examples/VEHICLE_ASSISTANT_README.md](examples/VEHICLE_ASSISTANT_README.md).
 
 ## License
 
