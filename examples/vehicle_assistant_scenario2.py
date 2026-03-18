@@ -30,6 +30,7 @@ from thoughtful_agents.models import (
 )
 from thoughtful_agents.utils.turn_taking_engine import decide_next_speaker_and_utterance, predict_turn_taking_type
 from thoughtful_agents.utils.llm_api import DEFAULT_COMPLETION_MODEL, DEFAULT_EMBEDDING_MODEL
+from thoughtful_agents.utils.timing import TimingTracker, set_timing_tracker
 
 async def run_scenario2(verbose: bool = True):
     """
@@ -40,6 +41,10 @@ async def run_scenario2(verbose: bool = True):
     Args:
         verbose: Whether to print detailed thought processes
     """
+    # Initialize timing tracker
+    tracker = TimingTracker()
+    set_timing_tracker(tracker)
+
     # Current time context - simulating it's around 8:25 AM
     current_time_context = "8:25 AM"
 
@@ -263,6 +268,10 @@ I need to monitor fuel level and provide timely suggestions."""
     print("  2. Trigger Event: Low fuel warning activated proactive response")
     print("  3. Context Awareness: Assistant considered time, location, and preferences")
     print("  4. Proactive Behavior: Assistant suggested solution without being asked")
+
+    # Print execution time summary
+    print("\n")
+    tracker.print_summary(detailed=False)
 
 
 async def main():
