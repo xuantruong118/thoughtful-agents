@@ -5,6 +5,7 @@ from openai import OpenAI, APIError
 import logging
 import asyncio
 import time
+from .timing import get_timing_tracker
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,7 +46,7 @@ async def get_completion(
     response_format: Optional[str] = None
 ) -> Dict[str, Any]:
     """Get completion from OpenAI API.
-    
+
     Args:
         system_prompt: System message
         user_prompt: User message/query
@@ -54,13 +55,17 @@ async def get_completion(
         max_tokens: Maximum tokens in response (optional)
         max_retries: Maximum number of retries on API error (default: 3)
         response_format: Response format (optional, e.g., "json_object")
-        
+
     Returns:
         Dictionary with API response, containing 'text', 'finish_reason', etc.
-        
+
     Raises:
         LLMAPIError: If API call fails after max_retries
     """
+    # Start timing
+    start_time = time.perf_counter()
+    tracker = get_timing_tracker()
+
     client = get_client()
     for attempt in range(max_retries):
         try:
@@ -74,15 +79,26 @@ async def get_completion(
                 "max_tokens": max_tokens,
                 "top_p": 1.0
             }
-            
+
             if response_format:
                 completion_args["response_format"] = {"type": response_format}
-            
+
             response = client.chat.completions.create(**completion_args)
-            
+
             result = {"text": response.choices[0].message.content}
+
+            # Record timing if tracker is available
+            if tracker:
+                duration = time.perf_counter() - start_time
+                metadata = {
+                    'model': model,
+                    'temperature': temperature,
+                    'response_format': response_format
+                }
+                tracker.record('llm_call', duration, metadata)
+
             return result
-            
+
         except APIError as e:
             if e.status_code == 429:  # Rate limit error
                 if attempt < max_retries - 1:
@@ -92,11 +108,11 @@ async def get_completion(
                     continue
             logger.error(f"OpenAI API error: {str(e)}")
             raise LLMAPIError(f"OpenAI API error: {str(e)}")
-            
+
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             raise LLMAPIError(f"Unexpected error: {str(e)}")
-    
+
     raise LLMAPIError("Max retries exceeded")
 
 
