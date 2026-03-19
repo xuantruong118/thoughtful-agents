@@ -1,29 +1,54 @@
 /**
- * Thoughtful Agents Web Demo - Client-side JavaScript
+ * Thoughtful Agents Web Demo - Enhanced Client-side JavaScript
  *
- * Handles Server-Sent Events (SSE) for real-time updates and UI interactions.
+ * Handles Server-Sent Events (SSE) for real-time updates, multi-user support,
+ * and system triggers for proactive agent behavior.
  */
 
 // UI Elements
 const startBtn = document.getElementById('startBtn');
+const sendUserBtn = document.getElementById('sendUserBtn');
 const triggerBtn = document.getElementById('triggerBtn');
+const speakerSelect = document.getElementById('speakerSelect');
+const userInput = document.getElementById('userInput');
+const triggerPreset = document.getElementById('triggerPreset');
 const triggerInput = document.getElementById('triggerInput');
 const statusDot = document.getElementById('statusDot');
 const statusText = document.getElementById('statusText');
 const memoryContent = document.getElementById('memoryContent');
 const conversationContent = document.getElementById('conversationContent');
 const thoughtsContent = document.getElementById('thoughtsContent');
+const memoryCount = document.getElementById('memoryCount');
+const turnCount = document.getElementById('turnCount');
+const thoughtCount = document.getElementById('thoughtCount');
 
 // State
 let eventSource = null;
 let isRunning = false;
+let memoryItemCount = 0;
+let currentTurn = 0;
+let thoughtItemCount = 0;
 
 // Initialize event listeners
 startBtn.addEventListener('click', startDemo);
+sendUserBtn.addEventListener('click', sendUserMessage);
 triggerBtn.addEventListener('click', sendTrigger);
+
+userInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendUserMessage();
+    }
+});
+
 triggerInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         sendTrigger();
+    }
+});
+
+triggerPreset.addEventListener('change', (e) => {
+    if (e.target.value) {
+        triggerInput.value = e.target.value;
     }
 });
 
@@ -42,6 +67,12 @@ async function startDemo() {
 
         // Clear previous content
         clearPanels();
+
+        // Reset counters
+        memoryItemCount = 0;
+        currentTurn = 0;
+        thoughtItemCount = 0;
+        updateCounters();
 
         // Update status
         updateStatus('Starting demo...', 'active');
@@ -63,6 +94,8 @@ async function startDemo() {
 
         isRunning = true;
         startBtn.textContent = '▶️ Demo Running';
+        sendUserBtn.disabled = false;
+        triggerBtn.disabled = false;
 
     } catch (error) {
         console.error('Error starting demo:', error);
@@ -122,6 +155,9 @@ function handleEvent(event) {
         case 'system_message':
             handleSystemMessage(event.data);
             break;
+        case 'system_trigger':
+            handleSystemTrigger(event.data);
+            break;
         case 'inner_thought':
             handleInnerThought(event.data);
             break;
@@ -161,9 +197,23 @@ function handleMemoryInitialized(data) {
     data.memory_items.forEach((item, index) => {
         const memoryItem = document.createElement('div');
         memoryItem.className = 'memory-item';
-        memoryItem.textContent = item;
+
+        const header = document.createElement('div');
+        header.className = 'memory-item-header';
+        header.innerHTML = `
+            <span class="memory-id">KNO #${index + 1}</span>
+        `;
+
+        const content = document.createElement('div');
+        content.textContent = item;
+
+        memoryItem.appendChild(header);
+        memoryItem.appendChild(content);
         memoryContent.appendChild(memoryItem);
     });
+
+    memoryItemCount = data.memory_items.length;
+    updateCounters();
 }
 
 /**
@@ -171,6 +221,8 @@ function handleMemoryInitialized(data) {
  */
 function handleAgentMessage(data) {
     addMessage('agent', data.speaker, data.content, data.turn);
+    currentTurn = data.turn;
+    updateCounters();
 }
 
 /**
@@ -178,6 +230,8 @@ function handleAgentMessage(data) {
  */
 function handleHumanMessage(data) {
     addMessage('human', data.speaker, data.content, data.turn);
+    currentTurn = data.turn;
+    updateCounters();
 }
 
 /**
@@ -185,6 +239,13 @@ function handleHumanMessage(data) {
  */
 function handleSystemMessage(data) {
     addMessage('system', 'System', data.content, data.turn);
+}
+
+/**
+ * Handle system trigger
+ */
+function handleSystemTrigger(data) {
+    addMessage('system', '⚙️ System Trigger', data.content, data.turn);
 }
 
 /**
@@ -198,7 +259,7 @@ function addMessage(type, speaker, content, turn) {
 
     messageDiv.innerHTML = `
         <div class="message-header">
-            <span>${icon} ${speaker}</span>
+            <span class="message-speaker">${icon} ${escapeHtml(speaker)}</span>
             <span class="message-turn">Turn ${turn}</span>
         </div>
         <div class="message-content">${escapeHtml(content)}</div>
@@ -225,6 +286,9 @@ function handleInnerThought(data) {
 
     thoughtsContent.appendChild(thoughtDiv);
     thoughtsContent.scrollTop = thoughtsContent.scrollHeight;
+
+    thoughtItemCount++;
+    updateCounters();
 }
 
 /**
@@ -245,15 +309,16 @@ function handleScenarioCompleted(data) {
 
     // Re-enable start button
     startBtn.disabled = false;
-    startBtn.textContent = '▶️ Restart Demo';
+    startBtn.textContent = '🔄 Restart Demo';
     isRunning = false;
 }
 
 /**
- * Send a custom trigger message
+ * Send a user message
  */
-async function sendTrigger() {
-    const message = triggerInput.value.trim();
+async function sendUserMessage() {
+    const message = userInput.value.trim();
+    const speaker = speakerSelect.value;
 
     if (!message) {
         alert('Please enter a message');
@@ -266,26 +331,84 @@ async function sendTrigger() {
     }
 
     try {
-        triggerBtn.disabled = true;
-        triggerBtn.textContent = 'Sending...';
+        sendUserBtn.disabled = true;
+        sendUserBtn.textContent = 'Sending...';
 
         const response = await fetch('/trigger', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message })
+            body: JSON.stringify({
+                message: message,
+                speaker: speaker,
+                type: 'user'
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send message');
+        }
+
+        // Clear input
+        userInput.value = '';
+
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Failed to send message: ' + error.message);
+    } finally {
+        sendUserBtn.disabled = false;
+        sendUserBtn.textContent = 'Send';
+    }
+}
+
+/**
+ * Send a system trigger
+ */
+async function sendTrigger() {
+    let message = triggerInput.value.trim();
+
+    if (!message) {
+        alert('Please enter a trigger or select a preset');
+        return;
+    }
+
+    if (!isRunning) {
+        alert('Please start the demo first');
+        return;
+    }
+
+    try {
+        triggerBtn.disabled = true;
+        triggerBtn.textContent = 'Sending...';
+
+        // Try to parse as JSON to format it nicely
+        try {
+            const jsonObj = JSON.parse(message);
+            message = `🚨 VEHICLE SYSTEM ALERT: ${JSON.stringify(jsonObj)}`;
+        } catch (e) {
+            // If not JSON, use as-is
+            message = `🚨 SYSTEM TRIGGER: ${message}`;
+        }
+
+        const response = await fetch('/trigger', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: message,
+                type: 'system'
+            })
         });
 
         if (!response.ok) {
             throw new Error('Failed to send trigger');
         }
 
-        // Clear input
+        // Clear input and reset preset
         triggerInput.value = '';
-
-        // Add user-triggered message to conversation
-        addMessage('system', 'User Trigger', message, '-');
+        triggerPreset.value = '';
 
     } catch (error) {
         console.error('Error sending trigger:', error);
@@ -311,12 +434,21 @@ function updateStatus(text, state) {
 }
 
 /**
+ * Update counters
+ */
+function updateCounters() {
+    memoryCount.textContent = `${memoryItemCount} items`;
+    turnCount.textContent = `Turn ${currentTurn}`;
+    thoughtCount.textContent = `${thoughtItemCount} thoughts`;
+}
+
+/**
  * Clear all panels
  */
 function clearPanels() {
-    memoryContent.innerHTML = '<div class="empty-state"><p>Loading memory...</p></div>';
-    conversationContent.innerHTML = '<div class="empty-state"><p>Loading conversation...</p></div>';
-    thoughtsContent.innerHTML = '<div class="empty-state"><p>Loading thoughts...</p></div>';
+    memoryContent.innerHTML = '<div class="empty-state"><p>🧠 Loading memory...</p></div>';
+    conversationContent.innerHTML = '<div class="empty-state"><p>📝 Loading conversation...</p></div>';
+    thoughtsContent.innerHTML = '<div class="empty-state"><p>🤔 Loading thoughts...</p></div>';
 }
 
 /**
@@ -328,5 +460,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Initialize status
+// Initialize status and disable buttons
 updateStatus('Ready', '');
+sendUserBtn.disabled = true;
+triggerBtn.disabled = true;
