@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thoughtful Agents - Proactive AI Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🤖 Proactive Conversational Agents with Inner Thoughts</h1>
+            <p class="subtitle">A demonstration of AI agents with cognitive processes and proactive behavior</p>
+        </header>
+
+        <!-- Control Panel (The "+1" part) -->
+        <div class="control-panel">
+            <div class="control-section">
+                <div class="control-header">
+                    <h3>🎮 Control Panel</h3>
+                    <span class="status-badge" id="status-badge">Ready</span>
+                </div>
+
+                <div class="control-row">
+                    <button id="start-btn" class="btn btn-primary">
+                        ▶️ Start Demo
+                    </button>
+                    <button id="restart-btn" class="btn btn-secondary" style="display:none;">
+                        🔄 Restart
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <div class="section-header">
+                    <h4>💬 User Message</h4>
+                    <span class="hint-text">Simulate multi-party conversation</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="speaker-select">Speaker:</label>
+                    <select id="speaker-select" class="select-input">
+                        <option value="minh_(driver)">Minh (Driver)</option>
+                        <option value="passenger_a">Passenger A</option>
+                        <option value="passenger_b">Passenger B</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="message-input">Message:</label>
+                    <input type="text" id="message-input" class="text-input"
+                           placeholder="Type a message..." />
+                </div>
+
+                <button id="send-message-btn" class="btn btn-success">
+                    📤 Send Message
+                </button>
+            </div>
+
+            <div class="control-section trigger-section">
+                <div class="section-header">
+                    <h4>⚡ System Trigger</h4>
+                    <span class="hint-text">Simulate vehicle events for proactive AI response</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="trigger-preset">Preset Triggers:</label>
+                    <select id="trigger-preset" class="select-input">
+                        <option value="">-- Select a preset --</option>
+                        <option value='{"event": "low_fuel", "level": "15%", "range": "45km"}'>
+                            ⛽ Low Fuel (15%, 45km range)
+                        </option>
+                        <option value='{"event": "tire_pressure_low", "tire": "front_left", "pressure": "28 PSI"}'>
+                            🛞 Low Tire Pressure (Front Left, 28 PSI)
+                        </option>
+                        <option value='{"event": "weather_change", "condition": "heavy_rain", "visibility": "low"}'>
+                            🌧️ Heavy Rain (Low visibility)
+                        </option>
+                        <option value='{"event": "traffic_jam", "location": "Le Loi St", "delay": "15 minutes"}'>
+                            🚗 Traffic Jam (Le Loi St, 15min delay)
+                        </option>
+                        <option value='{"event": "temperature_high", "value": "35°C", "ac_status": "on"}'>
+                            🌡️ High Temperature (35°C, AC on)
+                        </option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="trigger-input">Custom Trigger (JSON):</label>
+                    <textarea id="trigger-input" class="text-input trigger-input"
+                              placeholder='{"event": "event_name", "param": "value"}'
+                              rows="3"></textarea>
+                </div>
+
+                <button id="send-trigger-btn" class="btn btn-warning">
+                    ⚡ Send System Trigger
+                </button>
+
+                <p class="hint-text" style="margin-top: 10px;">
+                    💡 System triggers simulate vehicle events that make the AI respond proactively without being asked
+                </p>
+            </div>
+        </div>
+
+        <!-- Three Main Panels -->
+        <div class="panels-container">
+            <!-- Column 1: Long-term Memory -->
+            <div class="panel memory-panel">
+                <div class="panel-header">
+                    <h3>🧠 Long-term Memory (LTM)</h3>
+                    <span class="count-badge" id="memory-count">0</span>
+                </div>
+                <div class="panel-content" id="memory-content">
+                    <div class="empty-state">
+                        <p>🔄 Waiting for initialization...</p>
+                        <p class="empty-hint">Memory items will appear here</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Conversation -->
+            <div class="panel conversation-panel">
+                <div class="panel-header">
+                    <h3>💬 Conversation</h3>
+                    <span class="count-badge" id="turn-count">0</span>
+                </div>
+                <div class="panel-content" id="conversation-content">
+                    <div class="empty-state">
+                        <p>👋 Start the demo to begin conversation</p>
+                        <p class="empty-hint">Messages will appear here</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Inner Thoughts -->
+            <div class="panel thoughts-panel">
+                <div class="panel-header">
+                    <h3>💭 Inner Thoughts</h3>
+                    <span class="count-badge" id="thought-count">0</span>
+                </div>
+                <div class="panel-content" id="thoughts-content">
+                    <div class="empty-state">
+                        <p>🤔 Agent thoughts will appear here</p>
+                        <p class="empty-hint">Watch the AI's cognitive process in real-time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend Panel -->
+        <div class="legend-panel">
+            <h4>📖 Legend</h4>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="legend-color human-color"></span>
+                    <span>Human Message (Driver/Passengers)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color agent-color"></span>
+                    <span>AI Agent Response</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color system-color"></span>
+                    <span>System Event / Trigger</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge im-badge">IM: 4.5</span>
+                    <span>Intrinsic Motivation Score (1-5, higher = more motivated to speak)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>
+                Based on <a href="https://arxiv.org/pdf/2501.00383" target="_blank">
+                Proactive Conversational Agents with Inner Thoughts</a> (CHI 2025)
+            </p>
+            <p class="footer-note">
+                This demo shows how AI can be proactive based on context and inner cognitive processes
+            </p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
