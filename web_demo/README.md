@@ -2,136 +2,356 @@
 
 A web-based visualization interface for the Thoughtful Agents framework, demonstrating proactive AI agents with inner thoughts in real-time.
 
-## Features
+## 🎯 Features
 
-- **Three-Panel Interface**: Visualize Memory, Conversation, and Inner Thoughts simultaneously
+### Core Visualization
+- **Three-Panel Interface**: Visualize Long-term Memory (LTM), Conversation, and Inner Thoughts simultaneously
 - **Real-Time Updates**: Server-Sent Events (SSE) for live streaming of agent activities
-- **Interactive Triggers**: Send custom messages to trigger agent responses
-- **Vehicle Assistant Demo**: Based on the low fuel memory pattern scenario
+- **Interactive Controls**: Enhanced control panel with multiple interaction modes
 
-## Architecture
+### Multi-User Support
+- **Speaker Selection**: Dropdown to simulate conversations with multiple participants (Driver, Passenger A, Passenger B)
+- **Multi-party Conversations**: Support for complex dialogue scenarios with multiple humans and AI agents
 
-### Backend (Flask)
-- `app.py`: Flask server with SSE endpoints
+### System Triggers
+- **Vehicle Event Simulation**: Dedicated control panel for simulating vehicle system events
+- **Preset Triggers**: Quick-select common vehicle scenarios:
+  - ⛽ Low Fuel Warning
+  - 🔧 Tire Pressure Alert
+  - 🌧️ Weather Changes
+  - 🚦 Traffic Alerts
+  - 🔩 Maintenance Reminders
+- **Custom Triggers**: JSON-based custom event system for advanced scenarios
+
+### Enhanced UI Elements
+- **Live Counters**: Real-time display of memory items, conversation turns, and thought counts
+- **Color-Coded Messages**: Visual distinction between human, agent, and system messages
+- **Legend Panel**: Clear explanation of UI elements and IM (Intrinsic Motivation) scores
+- **Responsive Design**: Adaptive layout for different screen sizes
+
+## 🏗 Architecture
+
+### Backend (Flask + SSE)
+- `app.py`: Flask server with Server-Sent Events endpoints
 - Extends the vehicle assistant scenario with UI event emissions
 - Handles real-time event streaming to connected clients
+- Multi-trigger support (user messages + system events)
+- `/start`: Initialize demo scenario
+- `/trigger`: Send user messages or system events
+- `/state`: Get current demo state
+- `/events`: SSE stream for real-time updates
 
 ### Frontend
-- `templates/index.html`: Three-panel layout
-- `static/css/style.css`: Modern, responsive styling
-- `static/js/app.js`: Client-side SSE handling and UI updates
+- `templates/index.html`: Enhanced 3-column layout with control panels
+- `static/css/style.css`: Modern, responsive styling with gradient themes
+- `static/js/app.js`: Client-side SSE handling, multi-user support, and trigger management
 
-## Installation
+### Event Types
+The demo supports the following event types:
+- `scenario_started`: Demo initialization with scenario info
+- `memory_initialized`: Agent long-term memory loaded
+- `agent_message`: AI agent speaks
+- `human_message`: Human participant speaks
+- `system_message`: System status updates
+- `system_trigger`: Vehicle system events
+- `inner_thought`: Agent generates internal thought (with IM score)
+- `scenario_completed`: Demo finished
 
-1. Install dependencies:
+## 📦 Installation
+
+### Prerequisites
 ```bash
+# Install required Python packages
+pip install flask
+
+# Or install all dependencies
 pip install -r ../requirements.txt
 ```
 
-2. Ensure you have your OpenAI API key set:
+### Environment Setup
 ```bash
+# Set your OpenAI API key
 export OPENAI_API_KEY="your-api-key-here"
 ```
 
-## Running the Demo
+## 🚀 Running the Demo
 
-1. Start the Flask server:
+### 1. Start the Flask Server
 ```bash
+cd web_demo
 python app.py
 ```
 
-2. Open your browser to:
-```
-http://localhost:5000
-```
+### 2. Open in Browser
+Navigate to: `http://localhost:5000`
 
-3. Click "▶️ Start Demo" to run the vehicle assistant scenario
+### 3. Use the Demo
 
-4. Watch as the three panels update in real-time:
-   - **Memory**: Shows the agent's learned patterns and knowledge
-   - **Conversation**: Displays the dialogue between driver and assistant
-   - **Inner Thoughts**: Reveals the agent's cognitive process and intrinsic motivation scores
+#### A. Start the Scenario
+1. Click "▶️ Start Demo" button
+2. Watch the three panels populate with real-time data:
+   - **Memory Panel**: Shows agent's learned patterns (e.g., daily refueling routine)
+   - **Conversation Panel**: Displays dialogue between participants
+   - **Inner Thoughts Panel**: Reveals agent's cognitive process with IM scores
 
-## Custom Triggers
+#### B. Send User Messages (Multi-User Mode)
+1. Select speaker from dropdown (Minh, Passenger A, Passenger B)
+2. Type a message in the user input field
+3. Click "Send" or press Enter
+4. Watch the agent respond based on the message and context
 
-Use the trigger input box to send custom messages to the agent during the demo:
+Example messages:
+- "I'm feeling hungry, any restaurant nearby?"
+- "What's the weather like today?"
+- "How much fuel do we have left?"
 
-Example triggers:
-- "Traffic ahead on Nguyễn Huệ Street"
-- "Driver seems tired"
-- "Restaurant recommendation needed"
+#### C. Send System Triggers (Proactive Mode)
+1. **Use Presets**: Select from common vehicle events
+   - ⛽ Low Fuel (15%)
+   - 🔧 Low Tire Pressure
+   - 🌧️ Heavy Rain
+   - 🚦 Traffic Congestion
+   - 🔩 Maintenance Due
 
-## How It Works
+2. **Custom JSON Triggers**: Enter your own event
+   ```json
+   {"event": "engine_warning", "code": "P0420"}
+   {"event": "navigation", "action": "route_deviation"}
+   {"event": "phone_call", "caller": "Office"}
+   ```
 
-1. **Event Stream**: The server establishes an SSE connection with the client
-2. **Scenario Execution**: The vehicle assistant scenario runs asynchronously
-3. **Event Emission**: Key events (thoughts, messages, memory updates) are pushed to clients
-4. **UI Updates**: JavaScript handlers update the appropriate panels in real-time
+3. Click "Send Trigger"
+4. Observe how the agent:
+   - Generates inner thoughts in response
+   - Decides whether to speak proactively
+   - Interrupts conversation if priority is high
 
-## Technical Details
+## 🎨 UI Components
+
+### Control Panel
+- **Start/Restart Button**: Launch or restart the demo scenario
+- **Status Indicator**: Shows current demo state (Ready, Running, Completed)
+- **User Message Section**: Multi-user conversation input
+- **System Trigger Section**: Vehicle event simulation with presets
+
+### Panel Details
+
+#### 💾 Long-term Memory Panel
+- Displays agent's learned patterns and knowledge
+- Each memory item shows:
+  - Knowledge ID (KNO #)
+  - Content text
+  - Contextual information
+
+#### 💬 Conversation Panel
+- Shows chronological dialogue
+- Color-coded by participant type:
+  - 🟢 Human messages (green)
+  - 🔵 Agent messages (blue)
+  - 🟠 System events (orange)
+- Turn numbers for reference
+
+#### 💭 Inner Thoughts Panel
+- Reveals agent's cognitive process
+- Each thought shows:
+  - Turn number when generated
+  - IM Score (Intrinsic Motivation)
+  - Thought content
+  - (Future: Reference tags to related memory/conversation)
+
+### Legend
+The legend explains color coding and IM score meaning:
+- **IM Score**: Measures agent's motivation to express a thought
+- Higher scores = more likely to speak
+- Threshold determines if agent will interrupt or wait
+
+## 🔧 Technical Details
 
 ### Server-Sent Events (SSE)
-The demo uses SSE for one-way server-to-client communication, which is ideal for:
-- Real-time updates without polling
-- Automatic reconnection
-- Simple implementation compared to WebSockets
+The demo uses SSE for one-way server-to-client communication:
+- ✅ Real-time updates without polling
+- ✅ Automatic reconnection
+- ✅ Simpler than WebSockets for this use case
+- ✅ Built-in browser support
 
 ### Extended Classes
-- `UIAgent`: Extends `Agent` to emit UI events for thoughts and messages
-- `UIHuman`: Extends `Human` to emit UI events for messages
+To enable UI event emission:
+- `UIAgent`: Extends `Agent` to emit events for thoughts and messages
+- `UIHuman`: Extends `Human` to emit events for messages
 
-### Event Types
-- `scenario_started`: Demo initialization
-- `memory_initialized`: Agent memory loaded
-- `agent_message`: Agent speaks
-- `human_message`: Human speaks
-- `system_message`: System events
-- `inner_thought`: Agent generates a thought
-- `scenario_completed`: Demo finished
+### Proactive Behavior Flow
+1. **System Trigger** arrives (e.g., low fuel)
+2. **Agent receives** the trigger without explicit request
+3. **Inner Thoughts** are generated via deliberation
+4. **Evaluation** of intrinsic motivation (IM score)
+5. **Decision**: Speak now, wait, or stay silent
+6. **UI Updates**: All steps visible in real-time
 
-## Customization
+## 🎓 Understanding the Demo
+
+### What is Proactive AI?
+Unlike traditional reactive chatbots, this agent:
+- **Monitors context** continuously (vehicle state, user patterns)
+- **Generates thoughts** autonomously without prompts
+- **Decides when to speak** based on intrinsic motivation
+- **Can interrupt** when information is urgent
+
+### Inner Thoughts Explained
+The thoughts you see represent:
+- Agent's interpretation of events
+- Retrieval of relevant memories
+- Evaluation of whether to speak
+- Reasoning about user needs and priorities
+
+Example thought sequence:
+1. "Fuel level is 15%, below normal range"
+2. "Driver usually refuels at 8:30 AM every day"
+3. "Current time is 8:25 AM, close to usual time"
+4. "Should proactively suggest the usual gas station"
+
+### IM Score Interpretation
+- **< 2.0**: Low motivation, agent stays silent
+- **2.0 - 3.0**: Moderate motivation, waits for turn
+- **> 3.0**: High motivation, may interrupt
+- **> 4.0**: Urgent, definitely interrupts
+
+(Thresholds can be configured per agent)
+
+## 🛠 Customization
 
 ### Adding New Scenarios
 To add a new scenario:
 
-1. Create your scenario function (similar to `run_demo_scenario`)
-2. Use `UIAgent` and `UIHuman` for participants
-3. Call `emit_event()` for custom events
-4. Update the UI to handle new event types
+1. Create scenario function in `app.py`:
+```python
+async def run_custom_scenario():
+    # Your scenario logic
+    conversation = Conversation(context="...")
+    agent = UIAgent(name="...", proactivity_config={...})
+    # ... scenario steps
+```
 
-### Styling
-Modify `static/css/style.css` to customize:
-- Color schemes
-- Panel layouts
-- Animations
-- Responsive breakpoints
+2. Update `/start` endpoint to call your scenario
+3. Customize memory, participants, and events
 
-## Future Enhancements
+### Adding New Trigger Presets
+Edit `templates/index.html`, add to the `triggerPreset` select:
+```html
+<option value='{"event": "new_event", "data": "value"}'>
+  🔔 New Event Name
+</option>
+```
 
-- [ ] Support for multiple concurrent scenarios
-- [ ] Recording and playback of demo sessions
-- [ ] Export conversation history
-- [ ] Voice integration for driver messages
-- [ ] Additional vehicle assistant scenarios (restaurants, museums, etc.)
+### Styling Customization
+Modify `static/css/style.css`:
+- Color schemes: Update gradient definitions
+- Panel layouts: Adjust grid-template-columns
+- Animations: Modify @keyframes definitions
+- Responsive breakpoints: Update @media queries
 
-## Troubleshooting
+### Adding More Participants
+Update `templates/index.html`, add to `speakerSelect`:
+```html
+<option value="Passenger C">👤 Passenger C</option>
+<option value="Child">👶 Child</option>
+```
 
-**SSE connection drops:**
-- Check that the Flask server is running
+## 📊 Use Cases
+
+### 1. Research & Development
+- Visualize how proactive agents think
+- Debug inner thought generation
+- Test different proactivity configurations
+- Compare agent behaviors across scenarios
+
+### 2. Education & Demonstration
+- Teaching conversational AI concepts
+- Explaining cognitive architectures
+- Demonstrating System 1 vs System 2 thinking
+- Showing real-time agent decision making
+
+### 3. Vehicle UX Design
+- Prototype in-vehicle assistant behaviors
+- Test different trigger scenarios
+- Evaluate user experience with proactive AI
+- Design conversation flows
+
+### 4. Agent Evaluation
+- Assess response quality
+- Measure proactivity appropriateness
+- Test multi-user conversation handling
+- Evaluate memory utilization
+
+## 🐛 Troubleshooting
+
+### SSE Connection Drops
+- Check Flask server is running
 - Verify no firewall blocking port 5000
 - Look for errors in browser console
+- Ensure no other process using port 5000
 
-**No updates appearing:**
-- Ensure OpenAI API key is set correctly
+### No Updates Appearing
+- Verify OpenAI API key is set correctly
 - Check Flask console for errors
-- Verify asyncio event loop is running
+- Ensure asyncio event loop is running
+- Check browser network tab for SSE connection
 
-**Memory not displaying:**
-- Wait for the `memory_initialized` event
-- Check that agent memory is properly initialized
+### Memory Not Displaying
+- Wait for `memory_initialized` event
+- Check agent memory is properly initialized
+- Verify memory items are being emitted
 
-## Related Files
+### Triggers Not Working
+- Ensure demo is started first
+- Check trigger message format
+- Verify `/trigger` endpoint is receiving data
+- Look for errors in Flask console
+
+### Performance Issues
+- Close other browser tabs
+- Reduce number of memory items
+- Simplify scenario complexity
+- Consider pagination for long conversations
+
+## 🔮 Future Enhancements
+
+- [ ] WebSocket support for bidirectional communication
+- [ ] Recording and playback of demo sessions
+- [ ] Export conversation history (JSON/CSV)
+- [ ] Voice input for driver messages
+- [ ] Multiple concurrent scenarios
+- [ ] Memory editing interface
+- [ ] Advanced filtering and search
+- [ ] Thought visualization (graph view)
+- [ ] React/Next.js frontend version
+- [ ] Docker containerization
+
+## 📚 Related Files
 
 - Main scenario: `../examples/vehicle_assistant_scenario2.py`
 - Framework core: `../thoughtful_agents/`
 - Requirements: `../requirements.txt`
+- Quick start guide: `QUICKSTART.md`
+
+## 📖 References
+
+- Paper: [Proactive Conversational Agents with Inner Thoughts](https://arxiv.org/pdf/2501.00383) (CHI 2025)
+- Framework: [thoughtful-agents on GitHub](https://github.com/xybruceliu/thoughtful-agents)
+- Documentation: See main `README.md` in repository root
+
+## 🤝 Contributing
+
+Contributions are welcome! Areas for improvement:
+- Additional vehicle scenarios
+- UI/UX enhancements
+- Performance optimizations
+- Bug fixes
+- Documentation improvements
+
+## 📝 License
+
+This demo is part of the thoughtful-agents framework, licensed under Apache License 2.0.
+
+---
+
+**Built with ❤️ using Flask, Vanilla JavaScript, and the Thoughtful Agents framework**

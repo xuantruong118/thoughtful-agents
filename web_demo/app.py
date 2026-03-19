@@ -350,6 +350,8 @@ def trigger_event():
     """Manually trigger a custom event in the conversation."""
     data = request.json
     message = data.get('message', '')
+    speaker_name = data.get('speaker', 'Minh')  # Default to driver
+    trigger_type = data.get('type', 'user')  # 'user' or 'system'
 
     if not message:
         return jsonify({'error': 'Message is required'}), 400
@@ -367,6 +369,14 @@ def trigger_event():
             assistant = demo_state['assistant']
 
             async def process_trigger():
+                # Emit trigger event for UI
+                if trigger_type == 'system':
+                    emit_event('system_trigger', {
+                        'content': message,
+                        'turn': conversation.turn_number + 1
+                    })
+
+                # Send message from appropriate participant
                 event = await driver.send_message(message, conversation)
                 await predict_turn_taking_type(conversation)
                 await conversation.broadcast_event(event)
@@ -396,6 +406,35 @@ def trigger_event():
     thread.start()
 
     return jsonify({'status': 'triggered'})
+
+
+@app.route('/state', methods=['GET'])
+def get_state():
+    """Get current demo state including participants and memory."""
+    if not demo_state['conversation']:
+        return jsonify({'initialized': False})
+
+    participants = []
+    for p in demo_state['conversation'].participants:
+        participants.append({
+            'name': p.name,
+            'type': 'human' if isinstance(p, Human) else 'agent'
+        })
+
+    memory_items = []
+    if demo_state['assistant']:
+        for mem in demo_state['assistant'].memory:
+            memory_items.append({
+                'content': mem.content,
+                'salience': getattr(mem, 'salience', 0)
+            })
+
+    return jsonify({
+        'initialized': True,
+        'is_running': demo_state['is_running'],
+        'participants': participants,
+        'memory_count': len(memory_items)
+    })
 
 
 if __name__ == '__main__':

@@ -59,23 +59,31 @@ The demo shows a smart vehicle assistant that:
 - 📊 **Intrinsic Motivation**: Scores show why agent speaks
 - ⚡ **Real-Time**: Updates stream live via Server-Sent Events
 
-## Try Custom Triggers
+## Try Custom Interactions
 
 While the demo is running, try these:
 
-```
-Traffic congestion on Nguyễn Huệ Street
-```
+### User Messages (Multi-User Mode)
+1. Select speaker from dropdown (Minh, Passenger A, or B)
+2. Type messages like:
+   - "I'm feeling hungry, any restaurants nearby?"
+   - "What's the weather like?"
+   - "I'm tired, need a break"
 
-```
-Driver mentions feeling tired
-```
+### System Triggers (Proactive Mode)
+1. Select from preset vehicle events:
+   - ⛽ Low Fuel (15%)
+   - 🔧 Low Tire Pressure
+   - 🌧️ Heavy Rain
+   - 🚦 Traffic Congestion
 
-```
-Need a restaurant recommendation
-```
+2. Or enter custom JSON triggers:
+   ```json
+   {"event": "weather_change", "value": "heavy_rain"}
+   {"event": "engine_warning", "code": "P0420"}
+   ```
 
-The agent will think about your trigger and respond appropriately!
+The agent will think about your input and respond appropriately!
 
 ## What's Next?
 
