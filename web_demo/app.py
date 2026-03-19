@@ -124,35 +124,114 @@ def initialize_scenario():
         'interrupt_threshold': 2.8  # Will proactively interrupt for important matters
     })
 
-    # Initialize assistant memory
+    # Initialize assistant memory with extensive knowledge base
     assistant_memory = """I am a smart vehicle assistant integrated into this vehicle.
 I have been learning the driver Minh's patterns and routines over time.
+My purpose is to provide helpful information and proactive assistance to make the driving experience safer, more efficient, and more enjoyable.
 
-Driver's Daily Patterns:
-- Every day at 8:30 AM, driver Minh stops at a gas station to refuel
-- Preferred gas stations are on the commute route (Nguyễn Huệ Street)
-- Usually arrives at office around 9:00 AM after refueling
-- Likes Vietnamese food, especially phở and bánh mì
-- Prefers coffee shops with good wifi for working
+Driver's Daily Patterns and Routines:
+Every day at 8:30 AM, driver Minh stops at a gas station to refuel the vehicle.
+This is a consistent daily routine that has been observed for many weeks.
+Minh prefers gas stations that are on the regular commute route, especially on Nguyễn Huệ Street.
+After refueling, Minh usually arrives at the office around 9:00 AM.
+The morning commute typically takes about 25-30 minutes depending on traffic conditions.
 
-Vehicle Information:
-- Current location: Lê Lợi Street, heading downtown
-- Typical fuel consumption: 8L/100km
-- Tire pressure should be maintained at 32 PSI
-- Regular service every 5000 km
+Driver's Food Preferences:
+Minh loves Vietnamese cuisine, especially traditional dishes like phở and bánh mì.
+For breakfast, Minh frequently stops at Phở 24 restaurant on Lê Thánh Tôn Street.
+Minh enjoys bánh mì sandwiches from the vendor near the office building.
+For lunch, Minh prefers restaurants serving com tam (broken rice) and bún chả.
+Minh occasionally enjoys international cuisines like Japanese sushi and Italian pasta.
+Dietary preferences include avoiding overly spicy food and preferring fresh ingredients.
 
-Nearby Points of Interest:
-1. Petrolimex Gas Station - Nguyễn Huệ St (1.2km, 3 min) - Most frequently used
-2. Shell Station - Hai Bà Trưng St (0.8km, 2 min) - Closest option
-3. Phở 24 - Lê Thánh Tôn St (0.5km) - Favorite breakfast spot
-4. Highland Coffee - Đồng Khởi St (0.3km) - Regular stop for coffee
+Driver's Coffee and Work Habits:
+Minh is a coffee enthusiast and prefers Highland Coffee shops with good wifi connectivity.
+The Highland Coffee on Đồng Khởi Street is a regular stop for working remotely.
+Minh usually orders cappuccino or Vietnamese iced coffee (cà phê sữa đá).
+When working from cafes, Minh prefers quiet corners with power outlets available.
+Minh often has virtual meetings in the morning between 10:00 AM and 11:30 AM.
 
-My Responsibilities:
-- Monitor vehicle status and alert driver to important events
-- Provide proactive suggestions based on learned patterns
-- Help optimize the driver's daily routine and safety
-- Suggest routes, restaurants, and services based on context and preferences
-"""
+Vehicle Technical Information:
+The vehicle is a modern sedan with advanced driver assistance features.
+Current location is typically around Lê Lợi Street when heading downtown in the morning.
+The vehicle has an average fuel consumption rate of 8 liters per 100 kilometers.
+Fuel tank capacity is 50 liters, providing approximately 600 km range when full.
+Tire pressure should be maintained at 32 PSI for optimal performance and safety.
+Regular maintenance service is scheduled every 5000 kilometers or 6 months.
+Last service was performed 3000 kilometers ago at the authorized service center.
+
+Vehicle Current Status and Monitoring:
+Current odometer reading is approximately 28,500 kilometers.
+Next scheduled maintenance is due at 30,000 kilometers in about 1500 km.
+Tire pressure sensors are functioning normally across all four tires.
+Engine oil level is adequate and within the normal operating range.
+All safety systems including ABS, ESC, and airbags are operational.
+The vehicle's navigation system is connected and receiving real-time traffic updates.
+
+Nearby Gas Stations and Fuel Information:
+Petrolimex Gas Station on Nguyễn Huệ Street is 1.2 kilometers away, approximately 3 minutes drive.
+This is the most frequently used gas station by driver Minh due to its convenient location.
+Petrolimex offers high-quality fuel and has a convenience store and restroom facilities.
+Shell Station on Hai Bà Trưng Street is 0.8 kilometers away, approximately 2 minutes drive.
+Shell Station is the closest option and offers premium fuel grades with cleaning additives.
+Total Station on Lê Duẩn Street is 1.5 kilometers away, approximately 4 minutes drive.
+Total Station is on an alternative route to the office and has good service quality.
+
+Nearby Restaurants and Dining Options:
+Phở 24 on Lê Thánh Tôn Street is 0.5 kilometers away and is Minh's favorite breakfast spot.
+Phở 24 serves authentic Vietnamese beef noodle soup and is open from 6:00 AM to 10:00 PM.
+Com Tam Moc restaurant on Pasteur Street serves excellent broken rice dishes for lunch.
+Bánh Mì Huynh Hoa on Lê Thị Riêng Street is famous for delicious Vietnamese sandwiches.
+Sushi Hokkaido on Nguyễn Huệ Street offers fresh Japanese cuisine for special occasions.
+Pizza 4P's on Lê Thánh Tôn Street serves artisanal pizzas and is good for dinner meetings.
+
+Coffee Shops and Work-Friendly Locations:
+Highland Coffee on Đồng Khởi Street is 0.3 kilometers away and is Minh's regular spot.
+This location has excellent wifi, comfortable seating, and power outlets at every table.
+The Coffee House on Nguyễn Trãi Street offers a quiet atmosphere and good workspace.
+Starbucks Reserve on Đồng Khởi Street has a premium experience with specialty drinks.
+Trung Nguyên E-Coffee on Lê Lợi Street serves traditional Vietnamese coffee in a modern setting.
+
+Traffic Patterns and Route Information:
+Morning rush hour typically occurs between 7:00 AM and 9:00 AM with heavy traffic.
+Lê Lợi Street often experiences congestion during peak hours, adding 10-15 minutes to travel time.
+Alternative routes via Hai Bà Trưng Street or Trần Hưng Đạo Street can save time during rush hour.
+Traffic is usually lighter after 9:30 AM when most commuters have reached their destinations.
+Evening rush hour begins around 5:00 PM and continues until 7:00 PM.
+Weather conditions such as heavy rain can significantly impact traffic flow and visibility.
+
+Safety and Emergency Information:
+The nearest hospital with emergency services is located on Nguyễn Thị Minh Khai Street, 2.5 km away.
+Emergency contact numbers are programmed into the vehicle's emergency call system.
+The vehicle has automatic collision notification that alerts emergency services if airbags deploy.
+Roadside assistance is available 24/7 through the vehicle manufacturer's service hotline.
+In case of breakdown, the vehicle can be towed to the authorized service center.
+
+Weather and Environmental Conditions:
+Current weather forecast indicates clear skies with temperatures around 28-32 degrees Celsius.
+UV index is moderate to high, requiring air conditioning for comfortable cabin temperature.
+Air quality index (AQI) is typically moderate in the morning, improving during midday.
+During rainy season (May to November), weather can change rapidly with afternoon thunderstorms.
+Monsoon rains can cause localized flooding on certain streets, requiring route adjustments.
+
+Points of Interest and Landmarks:
+Ben Thanh Market is a major landmark located approximately 1 kilometer from the usual route.
+Notre-Dame Cathedral and Central Post Office are popular tourist attractions nearby.
+Nguyen Hue Walking Street is a pedestrian area perfect for evening strolls.
+Saigon Opera House hosts cultural performances and is located in District 1.
+Bitexco Financial Tower offers observation deck with panoramic city views.
+
+My Capabilities and Responsibilities:
+Monitor all vehicle systems continuously including fuel level, tire pressure, engine status, and safety systems.
+Provide proactive alerts and suggestions based on learned patterns and current context.
+Offer route optimization recommendations considering traffic, weather, and driver preferences.
+Suggest appropriate times for refueling, maintenance, and rest stops during longer journeys.
+Recommend dining options based on time of day, location, dietary preferences, and past choices.
+Assist with finding parking locations near destinations and estimate parking availability.
+Provide information about nearby amenities including ATMs, pharmacies, and convenience stores.
+Help optimize the driver's daily routine for maximum efficiency and minimal stress.
+Ensure driver safety by monitoring conditions and providing timely warnings and suggestions.
+Learn from driver behaviors and preferences to provide increasingly personalized assistance."""
 
     assistant.initialize_memory(assistant_memory, by_paragraphs=True)
 
@@ -170,7 +249,7 @@ My Responsibilities:
     emit_event('memory_initialized', {
         'count': len(assistant.memory_store.memories),
         'memories': [{'id': i+1, 'content': m.content[:200] + '...' if len(m.content) > 200 else m.content}
-                     for i, m in enumerate(assistant.memory_store.memories[:10])]
+                     for i, m in enumerate(assistant.memory_store.memories)]
     })
 
 
