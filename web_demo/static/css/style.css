@@ -136,6 +136,17 @@ body {
     font-style: italic;
 }
 
+.hint-list {
+    list-style: disc;
+    padding-left: 20px;
+    color: var(--color-text);
+    line-height: 1.6;
+}
+
+.hint-list li {
+    margin-bottom: 6px;
+}
+
 .control-row {
     display: flex;
     gap: 12px;

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thoughtful Agents - Lecture Practice Coach</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎤 Lecture Practice Coach</h1>
+            <p class="subtitle">Practice your talk with proactive AI feedback inspired by the lecture_practice example.</p>
+            <p class="hint-text">Need the vehicle assistant demo? <a href="/">Open vehicle demo</a></p>
+        </header>
+
+        <div class="control-panel">
+            <div class="control-section">
+                <div class="control-header">
+                    <h3>🎮 Session Control</h3>
+                    <span class="status-badge" id="status-badge">Ready</span>
+                </div>
+
+                <div class="control-row">
+                    <button id="start-btn" class="btn btn-primary">
+                        ▶️ Start Session
+                    </button>
+                    <button id="restart-btn" class="btn btn-secondary" style="display:none;">
+                        🔄 Restart
+                    </button>
+                </div>
+                <p class="hint-text">The coach carries lecture-specific knowledge and waits for you to speak first.</p>
+            </div>
+
+            <div class="control-section">
+                <div class="section-header">
+                    <h4>💬 Your Rehearsal</h4>
+                    <span class="hint-text">Paste a paragraph or type a few sentences, then press Send.</span>
+                </div>
+                <div class="input-group">
+                    <label for="message-input">Message:</label>
+                    <textarea id="message-input" class="text-input trigger-input" rows="4"
+                              placeholder="Example: “Today I’m covering the evolution of neural networks from perceptrons to transformers...”"></textarea>
+                </div>
+
+                <button id="send-message-btn" class="btn btn-success">
+                    📤 Send to Coach
+                </button>
+            </div>
+
+            <div class="control-section">
+                <div class="section-header">
+                    <h4>💡 Try These</h4>
+                    <span class="hint-text">Good starters for realistic feedback</span>
+                </div>
+                <ul class="hint-list">
+                    <li>“Here’s my intro about AI safety—does it sound confident?”</li>
+                    <li>“I think reinforcement learning began around 2010. Is that right?”</li>
+                    <li>“Is the pacing okay if I present this slide in 30 seconds?”</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="panels-container">
+            <div class="panel memory-panel">
+                <div class="panel-header">
+                    <h3>🧠 Background Knowledge</h3>
+                    <span class="count-badge" id="memory-count">0</span>
+                </div>
+                <div class="panel-content" id="memory-content">
+                    <div class="empty-state">
+                        <p>🔄 Waiting for initialization...</p>
+                        <p class="empty-hint">Coach knowledge will appear here</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel conversation-panel">
+                <div class="panel-header">
+                    <h3>💬 Conversation</h3>
+                    <span class="count-badge" id="turn-count">0</span>
+                </div>
+                <div class="panel-content" id="conversation-content">
+                    <div class="empty-state">
+                        <p>👋 Start the session and speak to the coach</p>
+                        <p class="empty-hint">Messages will appear here</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel thoughts-panel">
+                <div class="panel-header">
+                    <h3>💭 Inner Thoughts</h3>
+                    <span class="count-badge" id="thought-count">0</span>
+                </div>
+                <div class="panel-content" id="thoughts-content">
+                    <div class="empty-state">
+                        <p>🤔 Coach thoughts will appear here</p>
+                        <p class="empty-hint">See why the AI decides to speak</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend-panel">
+            <h4>📖 Legend</h4>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <span class="legend-color human-color"></span>
+                    <span>Your message</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color agent-color"></span>
+                    <span>Coach response</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-badge im-badge">IM: 4.5</span>
+                    <span>Intrinsic Motivation Score (higher = more eager to speak)</span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>
+                Based on <a href="https://arxiv.org/pdf/2501.00383" target="_blank">
+                Proactive Conversational Agents with Inner Thoughts</a> (CHI 2025)
+            </p>
+            <p class="footer-note">
+                This demo mirrors the lecture_practice scenario with live user input.
+            </p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/lecture.js') }}"></script>
+</body>
+</html>

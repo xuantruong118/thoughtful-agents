@@ -20,6 +20,7 @@ import json
 import queue
 import threading
 from datetime import datetime
+from functools import partial
 from flask import Flask, render_template, request, Response, jsonify
 from typing import Dict, Optional, List
 
@@ -37,18 +38,27 @@ conversation = None
 participants: Dict[str, any] = {}
 assistant = None
 demo_running = False
+lecture_event_queue = queue.Queue()
+lecture_conversation = None
+lecture_participants: Dict[str, any] = {}
+lecture_assistant = None
+lecture_demo_running = False
 
 
 class UIAgent(Agent):
     """Extended Agent that emits events for UI updates"""
 
+    def __init__(self, *args, event_sink=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event_sink = event_sink or emit_event
+
     async def send_message(self, message: str, conversation: Conversation):
         """Override to emit events when agent sends messages"""
         event = await super().send_message(message, conversation)
-        emit_event('agent_message', {
+        self.event_sink('agent_message', {
             'speaker': self.name,
             'message': message,
-            'turn': len(conversation.events)
+            'turn': len(conversation.event_history)
         })
         return event
 
@@ -65,8 +75,8 @@ class UIAgent(Agent):
         await super().evaluate_thoughts(thoughts, conversation)
         for thought in thoughts:
             if hasattr(thought, 'intrinsic_motivation_score') and thought.intrinsic_motivation_score is not None:
-                emit_event('inner_thought', {
-                    'turn': len(conversation.events),
+                self.event_sink('inner_thought', {
+                    'turn': len(conversation.event_history),
                     'score': thought.intrinsic_motivation_score,
                     'content': thought.content,
                     'thought_type': thought.thought_type if hasattr(thought, 'thought_type') else 'unknown'
@@ -76,20 +86,25 @@ class UIAgent(Agent):
 class UIHuman(Human):
     """Extended Human that emits events for UI updates"""
 
+    def __init__(self, *args, event_sink=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event_sink = event_sink or emit_event
+
     async def send_message(self, message: str, conversation: Conversation):
         """Override to emit events when human sends messages"""
         event = await super().send_message(message, conversation)
-        emit_event('human_message', {
+        self.event_sink('human_message', {
             'speaker': self.name,
             'message': message,
-            'turn': len(conversation.events)
+            'turn': len(conversation.event_history)
         })
         return event
 
 
-def emit_event(event_type: str, data: dict):
+def emit_event(event_type: str, data: dict, target_queue: queue.Queue = None):
     """Add an event to the queue for SSE streaming"""
-    event_queue.put({
+    queue_to_use = target_queue or event_queue
+    queue_to_use.put({
         'type': event_type,
         'data': data,
         'timestamp': datetime.now().isoformat()
@@ -253,6 +268,61 @@ Learn from driver behaviors and preferences to provide increasingly personalized
     })
 
 
+def initialize_lecture_scenario():
+    """Initialize the lecture practice scenario with interactive chat"""
+    global lecture_conversation, lecture_participants, lecture_assistant, lecture_demo_running, lecture_event_queue
+
+    lecture_event_queue = queue.Queue()
+    lecture_conversation = Conversation(
+        context="A presenter is rehearsing a talk and an AI coach provides concise, supportive feedback."
+    )
+
+    # Event sink for this scenario
+    lecture_sink = partial(emit_event, target_queue=lecture_event_queue)
+
+    lecture_participants = {
+        'presenter': UIHuman(name="Presenter", event_sink=lecture_sink)
+    }
+    lecture_assistant = UIAgent(
+        name="Feedback Coach",
+        proactivity_config={
+            'im_threshold': 3.0,
+            'system1_prob': 0.0,
+            'interrupt_threshold': 3.5
+        },
+        event_sink=lecture_sink
+    )
+
+    background_knowledge = """I'm an AI assistant designed to provide helpful feedback on presentations and lectures.
+My goal is to be encouraging and precise. I should:
+1. Offer critical corrections when facts are wrong.
+2. Save minor delivery notes until the presenter pauses or asks.
+3. Watch for clarity, pacing, and audience engagement cues."""
+
+    lecture_assistant.initialize_memory(background_knowledge, by_paragraphs=True)
+
+    lecture_conversation.add_participant(lecture_participants['presenter'])
+    lecture_conversation.add_participant(lecture_assistant)
+
+    lecture_demo_running = True
+
+    emit_event('scenario_started', {
+        'participants': [p.name for p in lecture_conversation.participants],
+        'title': 'Lecture Practice Coach'
+    }, target_queue=lecture_event_queue)
+
+    emit_event('memory_initialized', {
+        'count': len(lecture_assistant.memory_store.memories),
+        'memories': [{'id': i + 1, 'content': m.content[:200] + '...' if len(m.content) > 200 else m.content}
+                     for i, m in enumerate(lecture_assistant.memory_store.memories)]
+    }, target_queue=lecture_event_queue)
+
+    emit_event('system_message', {
+        'message': 'Session ready. Paste a section of your talk and I will respond with targeted feedback.',
+        'turn': 0
+    }, target_queue=lecture_event_queue)
+
+
 async def process_message_async(speaker_name: str, message: str, message_type: str = 'user'):
     """Process a message asynchronously"""
     global conversation, participants, assistant
@@ -266,7 +336,7 @@ async def process_message_async(speaker_name: str, message: str, message_type: s
             # System trigger - emit as system message
             emit_event('system_trigger', {
                 'message': message,
-                'turn': len(conversation.events) + 1
+                'turn': len(conversation.event_history) + 1
             })
 
             # Create a system event description for the agent to process
@@ -286,7 +356,7 @@ async def process_message_async(speaker_name: str, message: str, message_type: s
 
             if next_speaker and next_speaker.name == assistant.name and utterance:
                 await assistant.send_message(utterance, conversation)
-                await conversation.broadcast_event(conversation.events[-1])
+                await conversation.broadcast_event(conversation.event_history[-1])
 
         else:
             # Regular user message
@@ -307,10 +377,32 @@ async def process_message_async(speaker_name: str, message: str, message_type: s
             if next_speaker and utterance:
                 await next_speaker.send_message(utterance, conversation)
                 turn_allocation = await predict_turn_taking_type(conversation)
-                await conversation.broadcast_event(conversation.events[-1])
+                await conversation.broadcast_event(conversation.event_history[-1])
 
     except Exception as e:
         emit_event('error', {'message': str(e)})
+
+
+async def process_lecture_message_async(message: str):
+    """Process presenter input for the lecture practice scenario"""
+    global lecture_conversation, lecture_participants, lecture_assistant, lecture_demo_running
+
+    if not lecture_demo_running or not lecture_conversation:
+        initialize_lecture_scenario()
+
+    try:
+        presenter = lecture_participants.get('presenter')
+        event = await presenter.send_message(message, lecture_conversation)
+
+        await lecture_conversation.broadcast_event(event)
+
+        next_speaker, utterance = await decide_next_speaker_and_utterance(lecture_conversation)
+        if next_speaker and utterance:
+            await next_speaker.send_message(utterance, lecture_conversation)
+            await lecture_conversation.broadcast_event(lecture_conversation.event_history[-1])
+
+    except Exception as e:
+        emit_event('error', {'message': str(e)}, target_queue=lecture_event_queue)
 
 
 def run_async_task(coro):
@@ -355,7 +447,7 @@ async def run_demo_scenario():
     # Scenario 2: Low fuel trigger
     emit_event('system_message', {
         'message': '=== Triggering Low Fuel Event ===',
-        'turn': len(conversation.events) + 1
+        'turn': len(conversation.event_history) + 1
     })
 
     await asyncio.sleep(1)
@@ -364,7 +456,7 @@ async def run_demo_scenario():
                                 'system')
 
     emit_event('scenario_completed', {
-        'total_turns': len(conversation.events) if conversation else 0
+        'total_turns': len(conversation.event_history) if conversation else 0
     })
 
 
@@ -411,7 +503,7 @@ def get_state():
         'running': demo_running,
         'participants': [p.name for p in conversation.participants] if conversation else [],
         'memory_count': len(assistant.memory_store.memories) if assistant else 0,
-        'turn_count': len(conversation.events) if conversation else 0
+        'turn_count': len(conversation.event_history) if conversation else 0
     })
 
 
@@ -435,9 +527,71 @@ def stream_events():
     return Response(generate(), mimetype='text/event-stream')
 
 
+@app.route('/lecture')
+def lecture_index():
+    """Serve the lecture practice page"""
+    return render_template('lecture.html')
+
+
+@app.route('/lecture/start', methods=['POST'])
+def start_lecture():
+    """Start or reset the lecture practice scenario"""
+    initialize_lecture_scenario()
+    return jsonify({'status': 'initialized'})
+
+
+@app.route('/lecture/message', methods=['POST'])
+def send_lecture_message():
+    """Send a presenter message in the lecture practice scenario"""
+    data = request.json
+    message = data.get('message', '').strip()
+
+    if not message:
+        return jsonify({'error': 'Message is required'}), 400
+
+    thread = threading.Thread(
+        target=run_async_task,
+        args=(process_lecture_message_async(message),)
+    )
+    thread.daemon = True
+    thread.start()
+
+    return jsonify({'status': 'sent'})
+
+
+@app.route('/lecture/state', methods=['GET'])
+def get_lecture_state():
+    """Get the current lecture demo state"""
+    return jsonify({
+        'running': lecture_demo_running,
+        'participants': [p.name for p in lecture_conversation.participants] if lecture_conversation else [],
+        'memory_count': len(lecture_assistant.memory_store.memories) if lecture_assistant else 0,
+        'turn_count': len(lecture_conversation.event_history) if lecture_conversation else 0
+    })
+
+
+@app.route('/lecture/events')
+def stream_lecture_events():
+    """SSE endpoint for lecture practice"""
+
+    def generate():
+        try:
+            while True:
+                try:
+                    event = lecture_event_queue.get(timeout=30)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except queue.Empty:
+                    yield f": heartbeat\n\n"
+        except GeneratorExit:
+            pass
+
+    return Response(generate(), mimetype='text/event-stream')
+
+
 if __name__ == '__main__':
     print("Starting Thoughtful Agents Web Demo...")
     print("Open http://localhost:5000 in your browser")
+    print("Lecture practice coach: http://localhost:5000/lecture")
     print("\nFeatures:")
     print("- Multi-user conversation (Driver, Passenger A, Passenger B)")
     print("- System triggers for vehicle events")
