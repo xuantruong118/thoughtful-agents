@@ -149,6 +149,16 @@ Message: "I'm feeling hungry, any suggestions?"
 {"event": "maintenance_due", "type": "oil_change", "due_in": "500km"}
 ```
 
+### 🗣️ Lecture Practice Demo (Interactive Chat)
+
+Use the new lecture coach demo to mirror `examples/lecture_practice.py` without a scripted flow.
+
+1. Start the server as usual and open: `http://localhost:5000/lecture`
+2. Click **Start Session** to load the coach's background knowledge
+3. Paste or type a section of your talk into the message box and send
+4. The AI coach replies proactively and surfaces inner thoughts with IM scores
+5. Use **Restart** to reset the session and try a new topic
+
 ## 🎨 Các Thành Phần UI / UI Components
 
 ### Cột 1: Long-term Memory (Bộ Nhớ Dài Hạn)
